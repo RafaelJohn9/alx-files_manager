@@ -1,9 +1,5 @@
 const { MongoClient } = require('mongodb');
 
-/**
- * MongoDB utils
- */
-
 class DBClient {
   constructor() {
     this._credentials = {
@@ -14,7 +10,7 @@ class DBClient {
     if (process.env.DB_DATABSE) {
       this._credentials.database = process.env.DB_DATABASE;
     }
-    this.client = MongoClient(`mongodb://${this._credentials.host}:${this._credentials.port}`, { useNewUrlParser: true, useUnifiedTopology: true });
+    this.client = new MongoClient(`mongodb://${this._credentials.host}:${this._credentials.port}`, { useNewUrlParser: true, useUnifiedTopology: true });
     this.client.connect();
   }
 
@@ -23,29 +19,11 @@ class DBClient {
   }
 
   async nbUsers() {
-    return (new Promise((reject, resolve) => {
-      this.client.connect((err, client) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(client.db(this._credentials.database).collection('users').countDocuments());
-        }
-      });
-    }))
-      .catch((err) => console.error(err));
+    return this.client.db(this._credentials.database).collection('users').countDocuments();
   }
 
   async nbFiles() {
-    return new Promise((resolve, reject) => {
-      this.client.connect((err, client) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(client.db(this._credentials.database).collection('files').countDocuments());
-        }
-      });
-    })
-      .catch((err) => console.error(err));
+    return this.client.db(this._credentials.database).collection('files').countDocuments();
   }
 }
 
