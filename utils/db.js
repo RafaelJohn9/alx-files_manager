@@ -14,11 +14,12 @@ class DBClient {
     if (process.env.DB_DATABSE) {
       this._credentials.database = process.env.DB_DATABASE;
     }
-    this.client = MongoClient(`mongodb://${this._credentials.host}:${this._credentials.port}`, { useUnifiedTopology: true });
+    this.client = MongoClient(`mongodb://${this._credentials.host}:${this._credentials.port}`, { useNewUrlParser: true, useUnifiedTopology: true });
+    this.client.connect();
   }
 
   isAlive() {
-    return this.client.isConnected();
+    return (this.client.isConnected());
   }
 
   async nbUsers() {
