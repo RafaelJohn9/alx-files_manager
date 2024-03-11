@@ -1,4 +1,11 @@
 const { MongoClient } = require('mongodb');
+const crypto = require('crypto');
+
+function hashPassword(password) {
+  const sha1 = crypto.createHash('sha1');
+  sha1.update(password);
+  return sha1.digest('hex');
+}
 
 class DBClient {
   constructor() {
@@ -24,6 +31,21 @@ class DBClient {
 
   async nbFiles() {
     return this.client.db(this._credentials.database).collection('files').countDocuments();
+  }
+
+  async createUser(email, password) {
+    const usersCollection = this.client.db(this._credentials.database).collection('users');
+    const userExists = await usersCollection.findOne({ email });
+
+    if (userExists) {
+      return null;
+    }
+
+    const hashedPassword = hashPassword(password);
+    const result = await usersCollection.insertOne({ email, password: hashedPassword });
+
+    console.log(result.ops[0]);
+    return result.ops[0];
   }
 }
 

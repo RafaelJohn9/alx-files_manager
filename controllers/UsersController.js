@@ -1,20 +1,25 @@
 /**
  * @api {post} /users Create a new user
  */
-const redisClient = require('../utils/redis');
+const dbClient = require('../utils/db');
 
 const UserController = {
-  postNew: (req, res) => {
-    const { email, password } = req.body? req.body: [undefined, undefined];
+  postNew: async (req, res) => {
+    // Get the email and password from the request body
+    const { email, password } = req.body ? req.body : [undefined, undefined];
+    // If the email or password are missing, return a 400 status code
     if (!email || !password) {
       const missingElement = !email ? 'email' : 'password';
-      res.status(400).send(`Missing ${missingElement}`);
-    } else if (!redisClient.get('password') || !redisClient.get('email')) {
-      redisClient.set('email', email, 3600);
-      redisClient.set('password', password, 3600);
-      res.status(201).send('User created');
+      res.status(400).json({ error: `Missing ${missingElement}` });
+      return;
+    }
+    // Create a new user in the database
+    const newUser = await dbClient.createUser(email, password);
+    // If the user was created successfully, return a 201 status code
+    if (newUser) {
+      res.status(201).json(newUser);
     } else {
-      res.status(400).send('User already exists');
+      res.status(400).json({ error: 'User already exists' });
     }
   },
 };
