@@ -44,7 +44,6 @@ class DBClient {
     const hashedPassword = hashPassword(password);
     const result = await usersCollection.insertOne({ email, password: hashedPassword });
 
-    console.log(result.ops[0]);
     return result.ops[0];
   }
 }
