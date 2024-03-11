@@ -19,7 +19,7 @@ const UserController = {
     if (newUser) {
       res.status(201).json(newUser);
     } else {
-      res.status(400).json({ error: 'User already exists' });
+      res.status(400).json({ error: 'Already exists' });
     }
   },
 };
