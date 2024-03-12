@@ -28,8 +28,8 @@ router.get('/files/:id', FileController.getShow);
 
 router.get('/files', FileController.getIndex);
 
-router.put('/publish', FileController.putPublish);
+router.put('/files/:id/publish', FileController.putPublish);
 
-router.put('/unpublish', FileController.putUnpublish);
+router.put('/files/:id/unpublish', FileController.putUnpublish);
 
 module.exports = router;

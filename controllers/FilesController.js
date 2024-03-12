@@ -67,7 +67,7 @@ const FileController = {
     }
 
     const { id } = req.params;
-    const file = dbClient.findFileByKey('_id', id);
+    const file = await dbClient.findFileByKey('_id', id);
     if (!file || file.userId !== userId) {
       return res.status(404).send({ error: 'Not found' });
     }
@@ -93,8 +93,8 @@ const FileController = {
     if (!userId) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
-    const { id } = req.body;
-    const file = dbClient.findFileByKey('_id', id);
+    const { id } = req.params;
+    const file = await dbClient.findFileByKey('_id', id);
     if (!file || file.userId !== userId) {
       return res.status(404).send({ error: 'Not found' });
     }
@@ -109,8 +109,8 @@ const FileController = {
     if (!userId) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
-    const { id } = req.body;
-    const file = dbClient.findFileByKey('_id', id);
+    const { id } = req.params;
+    const file = await dbClient.findFileByKey('_id', id);
     if (!file || file.userId !== userId) {
       return res.status(404).send({ error: 'Not found' });
     }
