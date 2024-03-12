@@ -3,6 +3,7 @@
  * in case of file upload, the request object should contain the file to upload.
  */
 const mime = require('mime-types');
+const { Queue } = require('bull');
 const { dbClient } = require('../utils/db');
 const redisClient = require('../utils/redis');
 
@@ -31,8 +32,9 @@ const FileController = {
     if (type !== 'folder' && !data) {
       return res.status(400).send({ error: 'Missing data' });
     }
+    // Create a Bull queue
+    const fileQueue = new Queue('fileQueue');
 
-    // File object
     const file = {
       userId,
       name,
@@ -40,6 +42,14 @@ const FileController = {
       parentId,
       isPublic,
     };
+    // Add a job to the queue when a new image is stored
+    if (type === 'image') {
+      fileQueue.add({
+        userId,
+        fileId: file._id,
+      });
+    }
+    // File object
     if (data) {
       file.data = data;
     }
@@ -132,11 +142,11 @@ const FileController = {
     }
     const { id } = req.params;
     const file = await dbClient.findFileByKey('_id', id);
-    if (!file || file.userId !== userId) {
+    if (!file || (!file.isPublic && file.userId !== userId)) {
       return res.status(404).send({ error: 'Not found' });
     }
     if (file.type === 'folder') {
-      return res.status(400).send({ error: 'A folder doesn\'t have data' });
+      return res.status(400).send({ error: 'A folder doesn\'t have content' });
     }
     const contentType = mime.lookup(file.name);
 

@@ -114,6 +114,24 @@ class DBClient {
     const files = await filesCollection.find({ [key]: value }).skip((page - 1) * 20).limit(20).toArray();
     return files;
   }
+
+  async storeThumbnail(documentId, thumbnail) {
+    const filesCollection = this.client.db(this._credentials.database).collection('files');
+    const document = await filesCollection.findOne({ _id: new ObjectId(documentId) });
+    if (!document) {
+      return null;
+    }
+    const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+    const filePath = path.join(folderPath, uuidv4());
+    fs.writeFileSync(filePath, Buffer.from(thumbnail, 'base64'));
+    const update = { $set: { thumbnailPath: filePath } };
+    const filter = { _id: new ObjectId(documentId) };
+    const result = await filesCollection.updateOne(filter, update);
+    return result;
+  }
 }
 
 const dbClient = new DBClient();
