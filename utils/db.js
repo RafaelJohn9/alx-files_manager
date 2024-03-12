@@ -2,6 +2,9 @@
 const { MongoClient } = require('mongodb');
 const crypto = require('crypto');
 const { ObjectId } = require('mongodb');
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 function hashPassword(password) {
   const sha1 = crypto.createHash('sha1');
@@ -57,11 +60,50 @@ class DBClient {
 
   async findUserByKey(key, value) {
     if (key === '_id') {
-       value = new ObjectId(value);
+      value = new ObjectId(value);
     }
     const usersCollection = this.client.db(this._credentials.database).collection('users');
     const user = await usersCollection.findOne({ [key]: value });
     return user || null;
+  }
+
+  // Uploads a file in the db
+  async uploadFile(file, parentFolder = null) {
+    // Create a new file in the database
+    const filesCollection = this.client.db(this._credentials.database).collection('files');
+
+    // Create a new file in the database
+    const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
+
+    // Create a new folder /tmp/files_manager if it does not exist
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
+
+    // check if the parent folder exists
+    if (parentFolder) {
+      file.parentFolder = parentFolder;
+    }
+
+    // create a new file in the FOLDER_PATH  if not a  folder
+    if (file.type !== 'folder') {
+      const filePath = path.join(folderPath, uuidv4());
+      fs.writeFileSync(filePath, Buffer.from(file.data, 'base64'));
+      file.localPath = filePath;
+      delete file.data;
+    }
+    const result = await filesCollection.insertOne(file);
+    return result.ops[0];
+  }
+
+  // returns a file object or null
+  async findFileByKey(key, value) {
+    if (key === '_id') {
+      value = new ObjectId(value);
+    }
+    const filesCollection = this.client.db(this._credentials.database).collection('files');
+    const file = await filesCollection.findOne({ [key]: value });
+    return file || null;
   }
 }
 

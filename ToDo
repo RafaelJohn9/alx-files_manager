@@ -1,0 +1,3 @@
+Fix the redisClient.del --> its not deleting the key value pair as expected.
+
+In redis.js handle promise rejects more gracefully

@@ -42,4 +42,4 @@ const UserController = {
     return res.status(200).json({ id: user._id.toString(), email: user.email });
   },
 };
-module.exports = UserController;
+module.exports.UserController = UserController;

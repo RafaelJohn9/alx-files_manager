@@ -3,9 +3,10 @@
  * contains all endpoints of the API
  */
 const express = require('express');
-const AppController = require('../controllers/AppController');
-const UserController = require('../controllers/UsersController');
-const AuthController = require('../controllers/AuthController');
+const { AppController } = require('../controllers/AppController');
+const { UserController } = require('../controllers/UsersController');
+const { AuthController } = require('../controllers/AuthController');
+const { FileController } = require('../controllers/FileController');
 
 const router = express.Router();
 
@@ -20,5 +21,7 @@ router.get('/connect', AuthController.getConnect);
 router.get('/disconnect', AuthController.getDisconnect);
 
 router.get('/users/me', UserController.getMe);
+
+router.post('/files', FileController.postUpload);
 
 module.exports = router;
