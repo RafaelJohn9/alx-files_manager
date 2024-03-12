@@ -58,6 +58,34 @@ const FileController = {
     delete fileView._id;
     return res.status(201).json(fileView);
   },
+  getShow: async (req, res) => {
+    // checks if auth token is in redis db
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const { id } = req.params;
+    const file = dbClient.findFileByKey('_id', id);
+    if (!file || file.userId !== userId) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+    return res.status(200).json(file);
+  },
+
+  getIndex: async (req, res) => {
+    // checks if auth token is in redis db
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const parentId = req.query.parentId || 0;
+    const files = await dbClient.findMultipleFilesByKey('parentId', parentId);
+    return res.status(200).json(files);
+  },
 };
 
 module.exports.FileController = FileController;

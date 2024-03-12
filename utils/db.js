@@ -105,6 +105,16 @@ class DBClient {
     const file = await filesCollection.findOne({ [key]: value });
     return file || null;
   }
+
+  async findMultipleFilesByKey(key, value, page = 1) {
+    if (key === '_id') {
+      value = new ObjectId(value);
+    }
+    const filesCollection = this.client.db(this._credentials.database).collection('files');
+    // eslint-disable-next-line max-len
+    const files = await filesCollection.find({ [key]: value }).skip((page - 1) * 20).limit(20).toArray();
+    return files;
+  }
 }
 
 const dbClient = new DBClient();
