@@ -86,6 +86,37 @@ const FileController = {
     const files = await dbClient.findMultipleFilesByKey('parentId', parentId);
     return res.status(200).json(files);
   },
+  putPublish: async (req, res) => {
+    // checks if auth token is in redis db
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+    const { id } = req.body;
+    const file = dbClient.findFileByKey('_id', id);
+    if (!file || file.userId !== userId) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+    file.isPublic = true;
+    return res.status(200).json(file);
+  },
+
+  putUnpublish: async (req, res) => {
+    // checks if auth token is in redis db
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+    const { id } = req.body;
+    const file = dbClient.findFileByKey('_id', id);
+    if (!file || file.userId !== userId) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+    file.isPublic = false;
+    return res.status(200).json(file);
+  },
 };
 
 module.exports.FileController = FileController;
