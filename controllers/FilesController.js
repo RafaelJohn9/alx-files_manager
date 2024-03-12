@@ -147,8 +147,10 @@ const FileController = {
     res.setHeader('Content-Type', contentType);
 
     let data;
-    if (contentType.startsWith('text/')) {
+    if (contentType.startsWith('text/') || contentType === 'application/pdf') {
       data = Buffer.from(file.data, 'base64').toString('utf8');
+    } else if (contentType.startsWith('image/') || contentType.startsWith('video/')) {
+      data = `data:${contentType};base64,${file.data}`;
     } else {
       data = Buffer.from(file.data, 'base64');
     }
