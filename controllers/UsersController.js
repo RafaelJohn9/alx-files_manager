@@ -1,7 +1,8 @@
 /**
  * @api {post} /users Create a new user
  */
-const dbClient = require('../utils/db');
+const { dbClient } = require('../utils/db');
+const redisClient = require('../utils/redis');
 
 const UserController = {
   postNew: async (req, res) => {
@@ -27,6 +28,18 @@ const UserController = {
     } else {
       res.status(400).json({ error: 'Already exists' });
     }
+  },
+  getMe: async (req, res) => {
+    const token = req.headers['x-token'];
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const user = await dbClient.findUserByKey('_id', userId);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    return res.status(200).json({ id: user._id.toString(), email: user.email });
   },
 };
 module.exports = UserController;

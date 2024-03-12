@@ -1,5 +1,7 @@
+/* eslint-disable no-param-reassign */
 const { MongoClient } = require('mongodb');
 const crypto = require('crypto');
+const { ObjectId } = require('mongodb');
 
 function hashPassword(password) {
   const sha1 = crypto.createHash('sha1');
@@ -46,7 +48,23 @@ class DBClient {
 
     return result.ops[0];
   }
+
+  async findUserByEmail(email) {
+    const usersCollection = this.client.db(this._credentials.database).collection('users');
+    const user = await usersCollection.findOne({ email });
+    return user;
+  }
+
+  async findUserByKey(key, value) {
+    if (key === '_id') {
+       value = new ObjectId(value);
+    }
+    const usersCollection = this.client.db(this._credentials.database).collection('users');
+    const user = await usersCollection.findOne({ [key]: value });
+    return user || null;
+  }
 }
 
 const dbClient = new DBClient();
-module.exports = dbClient;
+module.exports.dbClient = dbClient;
+module.exports.hashPassword = hashPassword;

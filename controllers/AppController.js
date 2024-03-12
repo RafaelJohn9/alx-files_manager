@@ -3,7 +3,7 @@
  * the status and stats endpoints
  */
 const redisClient = require('../utils/redis');
-const dbClient = require('../utils/db');
+const { dbClient } = require('../utils/db');
 
 const AppController = {
   getStatus: (req, res) => {

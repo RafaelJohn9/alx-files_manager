@@ -24,7 +24,7 @@ class RedisClient {
       new Promise((resolve, reject) => {
         this.client.get(key, (err, reply) => {
           if (err) {
-            reject(err);
+            reject(null);
           } else {
             resolve(reply);
           }
@@ -40,7 +40,7 @@ class RedisClient {
     return new Promise((resolve, reject) => {
       this.client.setex(key, duration, value, (err, reply) => {
         if (err) {
-          reject(err);
+          reject(null);
         } else {
           resolve(reply);
         }
@@ -56,7 +56,7 @@ class RedisClient {
     return (new Promise((resolve, reject) => {
       this.client.del(key, (err, reply) => {
         if (err) {
-          reject(err);
+          reject(null);
         } else {
           resolve(reply);
         }
