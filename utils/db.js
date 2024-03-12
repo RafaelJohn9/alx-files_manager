@@ -90,7 +90,6 @@ class DBClient {
       const filePath = path.join(folderPath, uuidv4());
       fs.writeFileSync(filePath, Buffer.from(file.data, 'base64'));
       file.localPath = filePath;
-      delete file.data;
     }
     const result = await filesCollection.insertOne(file);
     return result.ops[0];

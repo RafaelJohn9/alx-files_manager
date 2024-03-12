@@ -32,4 +32,6 @@ router.put('/files/:id/publish', FileController.putPublish);
 
 router.put('/files/:id/unpublish', FileController.putUnpublish);
 
+router.get('/files/:id/data', FileController.getFile);
+
 module.exports = router;
