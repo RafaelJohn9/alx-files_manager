@@ -21,6 +21,8 @@ fileQueue.process(async (job, done) => {
     done(new Error('File not found'));
   }
 
+  console.log(`Welcome ${file.email}!`);
+
   const options = { responseType: 'base64' };
   const sizes = [500, 250, 100];
 
