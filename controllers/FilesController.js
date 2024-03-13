@@ -32,8 +32,6 @@ const FileController = {
     if (type !== 'folder' && !data) {
       return res.status(400).send({ error: 'Missing data' });
     }
-    // Create a Bull queue
-    const fileQueue = new Queue('fileQueue');
 
     const file = {
       userId,
@@ -44,6 +42,8 @@ const FileController = {
     };
     // Add a job to the queue when a new image is stored
     if (type === 'image') {
+      // Create a Bull queue
+      const fileQueue = new Queue('fileQueue');
       fileQueue.add({
         userId,
         fileId: file._id,
@@ -97,22 +97,33 @@ const FileController = {
       return res.status(401).send({ error: 'Unauthorized' });
     }
 
+    // checks if parentId is in the request query
     const parentId = req.query.parentId || 0;
+
+    // fetch files in the parentId
     const files = await dbClient.findMultipleFilesByKey('parentId', parentId);
     return res.status(200).json(files);
   },
   putPublish: async (req, res) => {
     // checks if auth token is in redis db
     const token = req.headers['x-token'];
+
+    // get the userId using the token and validate it
     const userId = await redisClient.get(`auth_${token}`);
     if (!userId) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
+
+    // get the id of the file from the request
     const { id } = req.params;
+
+    // get the file from the database and validate it
     const file = await dbClient.findFileByKey('_id', id);
     if (!file || file.userId !== userId) {
       return res.status(404).send({ error: 'Not found' });
     }
+
+    // change the file to public and send it with 200 response
     file.isPublic = true;
     return res.status(200).json(file);
   },
@@ -120,15 +131,23 @@ const FileController = {
   putUnpublish: async (req, res) => {
     // checks if auth token is in redis db
     const token = req.headers['x-token'];
+
+    // get the userId using the token and validate it
     const userId = await redisClient.get(`auth_${token}`);
     if (!userId) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
+
+    // get the id of the file from the request
     const { id } = req.params;
+
+    // get the file from the database and validate it
     const file = await dbClient.findFileByKey('_id', id);
     if (!file || file.userId !== userId) {
       return res.status(404).send({ error: 'Not found' });
     }
+
+    // change the file to private and send it with 200 response
     file.isPublic = false;
     return res.status(200).json(file);
   },
@@ -136,24 +155,33 @@ const FileController = {
   getFile: async (req, res) => {
     // checks if auth token is in redis db
     const token = req.headers['x-token'];
+
+    // get the userId using the token and validate it
     const userId = await redisClient.get(`auth_${token}`);
     if (!userId) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
+
+    // get the id of the file from the request
     const { id } = req.params;
+
+    // get the file from the database and validate it
     const file = await dbClient.findFileByKey('_id', id);
-    if (!file || (!file.isPublic && file.userId !== userId)) {
+    if (!file || (!file.isPublic && file.userId !== userId) || !file.data) {
       return res.status(404).send({ error: 'Not found' });
     }
     if (file.type === 'folder') {
       return res.status(400).send({ error: 'A folder doesn\'t have content' });
     }
+
+    // check the mimetype of the file and validate it
     const contentType = mime.lookup(file.name);
 
     if (!contentType) {
       return res.status(400).send({ error: 'Invalid file type' });
     }
 
+    // prepare response headers and data
     res.setHeader('Content-Type', contentType);
 
     let data;
@@ -165,6 +193,7 @@ const FileController = {
       data = Buffer.from(file.data, 'base64');
     }
 
+    // send the data with 200 response
     return res.status(200).send(data);
   },
 };
